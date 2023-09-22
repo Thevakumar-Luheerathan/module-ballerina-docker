@@ -31,7 +31,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./base/choreo-issue/
-          load: true
           push: true
           tags: luheerathan/ballerina-2201.3.5:choreo-issue
           build-args: |
