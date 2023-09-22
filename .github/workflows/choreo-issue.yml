@@ -1,0 +1,38 @@
+name: Fix Choreo Issue
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue Number'
+        required: true
+
+jobs:
+  publish-release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout docker repo
+        uses: actions/checkout@v2
+      - name: Copy zip artifact
+        run: | 
+          curl -o "hi.zip" -L -X GET -H "Accept:application/octet-stream" -u $packageUser:$packagePAT https://maven.pkg.github.com/Thevakumar-Luheerathan/module-ballerina-c2c/com/example/my-package/ballerina-2201.3.5-swan-lake.zip -v 
+          cp hi.zip ./base/choreo-issue/
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Build the docker image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./base/choreo-issue/
+          load: true
+          push: true
+          tags: luheerathan/ballerina-2201.3.5:choreo-issue
+          build-args: |
+            BALLERINA_DIST=hi.zip
